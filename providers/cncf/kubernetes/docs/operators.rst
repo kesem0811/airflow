@@ -362,6 +362,9 @@ For further information, look at:
 
 SparkKubernetesOperator
 ==========================
+
+.. _howto/operator:SparkKubernetesOperator:
+
 The :class:`~airflow.providers.cncf.kubernetes.operators.spark_kubernetes.SparkKubernetesOperator` allows
 you to create and run spark job on a Kubernetes cluster. It is based on `spark-on-k8s-operator <https://github.com/GoogleCloudPlatform/spark-on-k8s-operator>`__ project.
 
@@ -653,6 +656,35 @@ spark_job_template.json
 An alternative method, apart from using YAML or JSON files, is to directly pass the ``template_spec`` field instead of application_file
 if you prefer not to employ a file for configuration.
 
+How does XCom work?
+^^^^^^^^^^^^^^^^^^^
+
+When ``do_xcom_push=True``, :class:`~airflow.providers.cncf.kubernetes.operators.spark_kubernetes.SparkKubernetesOperator`
+injects an XCom ``emptyDir`` volume, a driver ``volumeMount`` at ``/airflow/xcom``, and an
+``airflow-xcom-sidecar`` sidecar into the SparkApplication spec before submission. The Spark
+driver must write valid JSON to ``/airflow/xcom/return.json``. When the driver completes,
+Airflow reads that file through the sidecar, similar to
+:class:`~airflow.providers.cncf.kubernetes.operators.pod.KubernetesPodOperator`.
+
+.. important::
+
+  Do **not** define the XCom volume (for example ``spec.volumes`` with name ``xcom``),
+  a driver ``volumeMounts`` entry for ``/airflow/xcom``, or an ``airflow-xcom-sidecar``
+  entry under ``driver.sidecars`` in your SparkApplication YAML or ``template_spec``.
+  The operator adds these resources when ``do_xcom_push=True``. Defining them yourself
+  duplicates the mount path and Kubernetes rejects the driver pod.
+
+.. code-block:: python
+
+    SparkKubernetesOperator(
+        task_id="spark_xcom_task",
+        application_file="spark_job_template.yaml",
+        do_xcom_push=True,
+        dag=dag,
+    )
+
+The sidecar image and resources are taken from the Kubernetes connection, the same as for
+:class:`~airflow.providers.cncf.kubernetes.operators.pod.KubernetesPodOperator`.
 
 Reference
 ^^^^^^^^^
