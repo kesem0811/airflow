@@ -59,8 +59,8 @@ class SparkKubernetesOperator(KubernetesPodOperator):
     :param template_spec: kubernetes sparkApplication specification
     :param get_logs: get the stdout of the container as logs of the tasks.
     :param do_xcom_push: If True, the content of the file
-        ``/airflow/xcom/return.json`` in the Spark driver will also be pushed to an
-        XCom when the driver completes. See :ref:`howto/operator:SparkKubernetesOperator`.
+        /airflow/xcom/return.json in the container will also be pushed to an
+        XCom when the container completes.
     :param success_run_history_limit: Number of past successful runs of the application to keep.
     :param startup_timeout_seconds: timeout in seconds to startup the pod.
     :param log_events_on_failure: Log the pod's events if a failure occurs

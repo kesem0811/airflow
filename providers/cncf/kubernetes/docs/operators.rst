@@ -661,10 +661,7 @@ How does XCom work?
 
 When ``do_xcom_push=True``, :class:`~airflow.providers.cncf.kubernetes.operators.spark_kubernetes.SparkKubernetesOperator`
 injects an XCom ``emptyDir`` volume, a driver ``volumeMount`` at ``/airflow/xcom``, and an
-``airflow-xcom-sidecar`` sidecar into the SparkApplication spec before submission. The Spark
-driver must write valid JSON to ``/airflow/xcom/return.json``. When the driver completes,
-Airflow reads that file through the sidecar, similar to
-:class:`~airflow.providers.cncf.kubernetes.operators.pod.KubernetesPodOperator`.
+``airflow-xcom-sidecar`` sidecar into the SparkApplication spec before submission.
 
 .. important::
 
@@ -673,18 +670,6 @@ Airflow reads that file through the sidecar, similar to
   entry under ``driver.sidecars`` in your SparkApplication YAML or ``template_spec``.
   The operator adds these resources when ``do_xcom_push=True``. Defining them yourself
   duplicates the mount path and Kubernetes rejects the driver pod.
-
-.. code-block:: python
-
-    SparkKubernetesOperator(
-        task_id="spark_xcom_task",
-        application_file="spark_job_template.yaml",
-        do_xcom_push=True,
-        dag=dag,
-    )
-
-The sidecar image and resources are taken from the Kubernetes connection, the same as for
-:class:`~airflow.providers.cncf.kubernetes.operators.pod.KubernetesPodOperator`.
 
 Reference
 ^^^^^^^^^
